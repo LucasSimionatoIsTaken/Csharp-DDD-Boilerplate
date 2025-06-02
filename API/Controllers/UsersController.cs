@@ -1,4 +1,5 @@
-using Application.User.ListAll;
+using Application.SeedWork.Responses;
+using Application.User;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,10 +22,9 @@ public class UsersController : Controller
     /// <returns>A users list</returns>
     /// <response code="200">A user list</response>
     [HttpGet]
-    public async Task<IActionResult> List()
-    {
-        return Ok(await _mediator.Send(new Request()));
-    }
+    [ProducesResponseType(typeof(PaginatedSuccessResponse<ListAll.Response>), StatusCodes.Status200OK)]
+    public async Task<BaseResponse<ListAll.Response>> List()
+        => await _mediator.Send(new ListAll.Request());
     
     /// <summary>
     /// Creates a user
@@ -34,10 +34,8 @@ public class UsersController : Controller
     /// <response code="201">Returns the newly created user</response>
     /// <response code="400">One or more parameters are missing or wrong</response>
     [HttpPost]
-    [ProducesResponseType(StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Create([FromBody] Application.User.Create.Request request)
-    {
-        return Ok(await _mediator.Send(request));
-    }
+    [ProducesResponseType(typeof(SuccessResponse<Create.Response>), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ErrorResponse<>), StatusCodes.Status400BadRequest)]
+    public async Task<BaseResponse<Create.Response>> Create([FromBody] Create.Request request)
+        => await _mediator.Send(request);
 }

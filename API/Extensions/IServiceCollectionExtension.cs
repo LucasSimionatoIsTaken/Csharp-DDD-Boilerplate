@@ -1,5 +1,8 @@
 using System.Reflection;
-using Application.User.ListAll;
+using API.SeedWork.Filters;
+using Application.SeedWork.Responses;
+using Application.User;
+using FluentValidation;
 using Infrastructure.Contexts;
 using Infrastructure.Repositories;
 using Infrastructure.Repositories.UserRepository;
@@ -58,20 +61,48 @@ public static class IServiceCollectionExtension
             
             var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
             options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
+            
+            options.CustomSchemaIds(type => type.FullName!.Replace("+", "."));
         });
     }
 
+    private static void AddControllersAndFilers(this IServiceCollection services)
+    {
+        services.AddControllers(options =>
+        {
+            options.Filters.Add<BaseResponseResultFilter>();
+        })
+        .AddNewtonsoftJson(options =>
+        {
+            options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+            options.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
+        });
+    }
+
+    private static void ConfigureFluentValidation(this IServiceCollection services)
+    {
+        AssemblyScanner.FindValidatorsInAssembly(typeof(BaseResponse<>).Assembly, true)
+            .ForEach(e => services.AddTransient(e.InterfaceType, e.ValidatorType));
+    }
+
+    /// <summary>
+    /// Adds dependency injections
+    /// </summary>
+    /// <param name="services"></param>
+    /// <param name="configuration"></param>
     public static void AddDependencyInjections(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddOpenApi();
         services.AddSwagger();
+
+        services.ConfigureFluentValidation();
         
         services.AddDbContext(configuration);
         services.AddRepositories();
         services.AddUnitOfWork();
 
-        services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Service>());
+        services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<ListAll>());
 
-        services.AddControllers();
+        services.AddControllersAndFilers();
     }
 }

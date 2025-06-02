@@ -8,6 +8,7 @@ public class User : GenericModel
     {
         
     }
+    
     public User(string username, string email, string password)
     {
         Username = username;

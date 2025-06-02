@@ -32,7 +32,7 @@ public abstract class GenericRepository<T> : IGenericRepository<T> where T : Gen
 
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
     {
-        T entity = await _entity.FindAsync(id);
+        T entity = (await _entity.FindAsync(id))!;
 
         entity.SetDeletedAt();
     }

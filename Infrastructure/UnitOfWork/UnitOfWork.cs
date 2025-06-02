@@ -5,7 +5,7 @@ namespace Infrastructure.UnitOfWork;
 
 public class UnitOfWork : IUnitOfWork, IDisposable
 {
-    private Context _context;
+    private readonly Context _context;
     private bool _isDisposed = false;
     public IUserRepository UserRepository { get; }
     
@@ -27,9 +27,11 @@ public class UnitOfWork : IUnitOfWork, IDisposable
 
     protected virtual void Dispose(bool idDisposing)
     {
-        if (!this._isDisposed)
-            if (idDisposing)
-                _context.Dispose();
+        if (this._isDisposed) return;
+        
+        if (idDisposing)
+            _context.Dispose();
+            
         this._isDisposed = true;
     }
 
