@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Core.SeedWork;
 using Infrastructure.Contexts;
 using Microsoft.EntityFrameworkCore;
@@ -8,32 +9,66 @@ public abstract class GenericRepository<T> : IGenericRepository<T> where T : Gen
 {
     protected GenericRepository(Context context)
     {
-        _context = context;
-        _entity = _context.Set<T>();
+        Context = context;
+        _entity = Context.Set<T>();
     }
 
-    protected readonly Context _context;
-    private DbSet<T> _entity;
+    protected readonly Context Context;
+    private readonly DbSet<T> _entity;
     
     public async Task AddAsync(T entity, CancellationToken cancellationToken)
     {
         await _entity.AddAsync(entity, cancellationToken);
     }
 
-    public async Task<List<T>> ListAllAsync(CancellationToken cancellationToken)
+    public async Task<(List<T> data, int total)> ListAllAsync(
+            Expression<Func<T, bool>>? filters = null,
+            Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null,
+            int page = 1,
+            int pageSize = 10,
+            bool noTrack = true,
+            CancellationToken ct = default,
+            params Expression<Func<T, object>>[] includes
+        )
     {
-        return await _entity.ToListAsync(cancellationToken);
+        var query = (IQueryable<T>)_entity;
+            
+        if (noTrack)
+            query = query.AsNoTracking();
+            
+        foreach (var include in includes)
+            query = query.Include(include);
+        
+        if (filters != null)
+            query = query.Where(filters);
+        
+        if (orderBy != null)
+            query = orderBy(query);
+
+        int total = await query.CountAsync(ct);
+        
+        query = query.Skip((page - 1) * pageSize).Take(pageSize);
+        
+        var data = await query.ToListAsync(ct);
+                
+        return (data, total);
     }
 
-    public async Task UpdateAsync(Guid id, T entity, CancellationToken cancellationToken)
+    public void Update(T entity, CancellationToken ct)
     {
-        await Task.FromResult(_entity.Update(entity));
+        Context.Entry(entity).State = EntityState.Modified;
     }
 
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
     {
-        T entity = (await _entity.FindAsync(id))!;
+        var entity = await _entity
+            .FirstAsync(e => e.Id == id, cancellationToken);
 
         entity.SetDeletedAt();
+    }
+
+    public async Task<T?> GetByIdAsync(Guid id, CancellationToken ct)
+    {
+        return await _entity.FindAsync(id, ct);
     }
 }

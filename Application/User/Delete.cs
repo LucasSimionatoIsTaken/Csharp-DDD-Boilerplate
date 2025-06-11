@@ -1,22 +1,18 @@
 using Application.SeedWork.Responses;
 using Infrastructure.UnitOfWork;
-using Mapster;
 using MediatR;
 
 namespace Application.User;
 
-public class ListAll
+public class Delete
 {
-    public class Request : IRequest<BaseResponse<Response>>
+    public class Request(Guid id) : IRequest<BaseResponse<Response>>
     {
-        
+        public Guid Id { get; private set; } = id;
     }
-    
+
     public class Response
     {
-        public string Id { get; private set; }
-        public string Username { get; private set; }
-        public string Email { get; private set; }
     }
 
     internal class Service : IRequestHandler<Request, BaseResponse<Response>>
@@ -30,11 +26,15 @@ public class ListAll
 
         public async Task<BaseResponse<Response>> Handle(Request request, CancellationToken ct)
         {
-            var users = (await _uow.UserRepository.ListAllAsync(ct: ct)).data;
-
-            var data = users.Adapt<List<Response>>();
+            var user = await _uow.UserRepository.GetByIdAsync(request.Id, ct);
             
-            return new PaginatedResponse<Response>(data);
+            if (user == null)
+                return new NoDataResponse<Response>(404, "User does not exist");
+
+            await _uow.UserRepository.DeleteAsync(request.Id, ct);
+            await _uow.CommitAsync(ct);
+            
+            return new NoDataResponse<Response>("User deleted");
         }
     }
 }

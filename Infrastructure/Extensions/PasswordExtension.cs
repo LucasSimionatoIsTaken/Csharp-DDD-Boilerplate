@@ -1,25 +1,27 @@
+using Isopoh.Cryptography.Argon2;
+
 namespace Infrastructure.Extensions;
 
-public static class BCryptExtension
+public static class PasswordExtension
 {
     /// <summary>
     /// Generates a hash with bcrypt
     /// </summary>
     /// <param name="password">String to be hashed</param>
-    /// <returns>Hash</returns>
-    public static string GenerateBCryptHash(this string password)
+    /// <returns>HashPassword</returns>
+    public static string HashPassword(this string password)
     {
-        return BCrypt.Net.BCrypt.HashPassword(password);
+        return Argon2.Hash(password);
     }
 
     /// <summary>
     /// Verify if a bcrypt hash is valid
     /// </summary>
-    /// <param name="hash">Hash to be verified</param>
+    /// <param name="hash">HashPassword to be verified</param>
     /// <param name="password">String to verify</param>
     /// <returns>True if valid</returns>
     public static bool VerifyHash(this string hash, string password)
     {
-        return BCrypt.Net.BCrypt.Verify(password, hash);
+        return Argon2.Verify(hash, password);
     }
 }

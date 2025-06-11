@@ -1,35 +1,31 @@
 using Application.SeedWork.Responses;
 using FluentValidation;
 using Infrastructure.Extensions;
+using Infrastructure.Options;
 using Infrastructure.UnitOfWork;
-using Mapster;
 using MediatR;
+using Microsoft.Extensions.Options;
 
-namespace Application.User;
+namespace Application.Auth;
 
-public class Create
+public class Login
 {
     public class Request : IRequest<BaseResponse<Response>>
     {
-        public Request(string username, string email, string password)
+        public Request(string email, string password)
         {
-            Username = username;
             Email = email;
             Password = password;
         }
 
-        public string Username { get; private set; }
-        public string Email { get; private set; }
-        public string Password { get; private set; }
+        public string Email { get; set; }
+        public string Password { get; set; }
     }
-    
+
     internal class Validator : AbstractValidator<Request>
     {
         public Validator()
         {
-            RuleFor(request => request.Username)
-                .NotEmpty().WithMessage("Username is required");
-        
             RuleFor(request => request.Email)
                 .NotEmpty().WithMessage("Email is required")
                 .EmailAddress().WithMessage("Email is invalid");
@@ -43,23 +39,28 @@ public class Create
                 .Matches("[^\\w\\d ]").WithMessage("Password must contain at least one special character");
         }
     }
-    
+
     public class Response
     {
-        public Guid Id { get; private set; }
-        public string Username { get; private set; }
-        public string Email { get; private set; }
+        public Response(string token)
+        {
+            Token = token;
+        }
+
+        public string Token { get; set; }
     }
-    
-    internal class Service : IRequestHandler<Request, BaseResponse<Response>>
+
+    public class Service : IRequestHandler<Request, BaseResponse<Response>>
     {
         private readonly IUnitOfWork _uow;
         private readonly IValidator<Request> _validator;
+        private readonly AuthTokenOptions _authOptions;
 
-        public Service(IUnitOfWork uow, IValidator<Request> validator)
+        public Service(IUnitOfWork uow, IValidator<Request> validator, IOptionsSnapshot<AuthTokenOptions> authOptions)
         {
             _uow = uow;
             _validator = validator;
+            _authOptions = authOptions.Value;
         }
 
         public async Task<BaseResponse<Response>> Handle(Request request, CancellationToken ct)
@@ -67,18 +68,19 @@ public class Create
             var validationResult = await _validator.ValidateAsync(request);
             
             if (!validationResult.IsValid)
-                return new ErrorListResponse<Response>(422, "One or more inputs are incorrect", validationResult.Errors);
+                return new NoDataResponse<Response>(401, "E-mail ou senha incorretos");
             
-            var user = request.Adapt<Core.User>();
+            var user = await _uow.UserRepository.GetByEmailAsync(request.Email);
+            
+            if (user == null)
+                return new NoDataResponse<Response>(401, "E-mail ou senha incorretos");
 
-            user.SetPassword(user.Password.HashPassword());
+            if (!user.Password.VerifyHash(request.Password))
+                return new NoDataResponse<Response>(401, "E-mail ou senha incorretos");
+            
+            var token = new Response(user.GenerateJwtToken(_authOptions));
 
-            await _uow.UserRepository.AddAsync(user, ct);
-            await _uow.CommitAsync(ct);
-
-            var data = user.Adapt<Response>();
-
-            return new DataResponse<Response>(201, "User created", data);
+            return new DataResponse<Response>(201, "Login successfully", token);
         }
     }
 }

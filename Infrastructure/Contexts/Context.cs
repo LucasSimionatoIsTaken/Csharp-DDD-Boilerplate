@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Core;
 using Core.SeedWork;
 using Microsoft.EntityFrameworkCore;
@@ -17,7 +18,7 @@ public class Context : DbContext
             e.Property(p => p.Username)
                 .HasMaxLength(160)
                 .IsRequired();
-            
+
             e.HasIndex(i => i.Email)
                 .IsUnique();
             e.Property(p => p.Email)
@@ -25,16 +26,20 @@ public class Context : DbContext
                 .IsRequired();
 
             e.Property(p => p.Password)
-                .HasMaxLength(60)
+                .HasMaxLength(255)
+                .IsRequired();
+
+            e.Property(p => p.Role)
                 .IsRequired();
         });
 
         SetFilterUniqueWhenDeletedAtIsNotNull(mb);
+        FilterDeletedAtNullValues(mb);
         base.OnModelCreating(mb);
     }
-    
+
     public DbSet<User> Users { get; set; }
-    
+
     private void SetFilterUniqueWhenDeletedAtIsNotNull(ModelBuilder mb)
     {
         foreach (var type in mb.Model.GetEntityTypes())
@@ -43,7 +48,7 @@ public class Context : DbContext
                     if (index.IsUnique)
                         index.SetFilter("DeletedAt IS NULL");
     }
-    
+
     public override int SaveChanges()
     {
         UpdateModifiedAtAndCreatedAt();
@@ -71,6 +76,27 @@ public class Context : DbContext
             }
             else if (entry.State == EntityState.Modified)
                 ((GenericModel)entry.Entity).SetUpdatedAt();
+        }
+    }
+
+    private void FilterDeletedAtNullValues(ModelBuilder mb)
+    {
+        foreach (var type in mb.Model.GetEntityTypes())
+        {
+            var clrType = type.ClrType;
+
+            if (typeof(GenericModel).IsAssignableFrom(clrType))
+            {
+                var param = Expression.Parameter(clrType, "e");
+                
+                var property = Expression.Property(param, nameof(GenericModel.DeletedAt));
+                var nullConstant = Expression.Constant(null, typeof(DateTime?));
+                var body = Expression.Equal(property, nullConstant);
+
+                var lambda = Expression.Lambda(body, param);
+
+                mb.Entity(clrType).HasQueryFilter(lambda);
+            }
         }
     }
 }

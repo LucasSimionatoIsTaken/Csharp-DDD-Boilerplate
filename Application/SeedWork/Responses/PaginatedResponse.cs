@@ -1,15 +1,15 @@
 namespace Application.SeedWork.Responses;
 
-public class PaginatedSuccessResponse<T> : BaseResponse<T> where T : class
+public class PaginatedResponse<T> : BaseResponse<T> where T : class
 {
     //TODO: Complete pagination, with Total, Page and PageSize
-    public PaginatedSuccessResponse(int statusCode, List<T> data)
+    public PaginatedResponse(int statusCode, List<T> data)
     {
         StatusCode = statusCode;
         Data = data;
     }
 
-    public PaginatedSuccessResponse(List<T> data)
+    public PaginatedResponse(List<T> data)
     {
         StatusCode = 200;
         Data = data;
