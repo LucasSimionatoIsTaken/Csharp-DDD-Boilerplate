@@ -27,7 +27,9 @@ public static class IServiceCollectionExtension
     {
         services.AddDbContext<Context>(options =>
         {
-            options.UseSqlServer(configuration.GetConnectionString("Default"));
+            options.UseSqlServer(Environment.GetEnvironmentVariable("CONTAINER_ENVIRONMENT") == "true"
+                ? configuration.GetConnectionString("Container")
+                : configuration.GetConnectionString("Default"));
         });
     }
     
