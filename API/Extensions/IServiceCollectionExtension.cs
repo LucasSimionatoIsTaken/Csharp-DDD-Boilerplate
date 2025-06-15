@@ -2,17 +2,14 @@ using System.Reflection;
 using System.Text;
 using API.SeedWork.Filters;
 using Application.SeedWork.Responses;
-using Application.User;
+using Application.Services.User;
 using Core;
-using Core.SeedWork;
 using FluentValidation;
 using Infrastructure.Contexts;
 using Infrastructure.Options;
 using Infrastructure.Repositories;
-using Infrastructure.Repositories.UserRepository;
 using Infrastructure.UnitOfWork;
 using Mapster;
-using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -208,7 +205,7 @@ public static class IServiceCollectionExtension
         
         services.AddMapsterMappings();
 
-        services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<ListAll>());
+        services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<BaseResponse<object>>());
 
         services.AddControllersAndFilers();
     }

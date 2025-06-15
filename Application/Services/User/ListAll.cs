@@ -3,7 +3,7 @@ using Infrastructure.UnitOfWork;
 using Mapster;
 using MediatR;
 
-namespace Application.User;
+namespace Application.Services.User;
 
 public class ListAll
 {

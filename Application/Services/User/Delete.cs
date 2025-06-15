@@ -2,7 +2,7 @@ using Application.SeedWork.Responses;
 using Infrastructure.UnitOfWork;
 using MediatR;
 
-namespace Application.User;
+namespace Application.Services.User;
 
 public class Delete
 {

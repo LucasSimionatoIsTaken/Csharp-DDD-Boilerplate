@@ -5,83 +5,80 @@ using Infrastructure.UnitOfWork;
 using Mapster;
 using MediatR;
 
-namespace Application.User;
+namespace Application.Services.User;
 
-public class Update
+public class Create
 {
     public class Request : IRequest<BaseResponse<Response>>
     {
-        public Guid Id { get; private set; }
-        public string? Username { get; set; }
-        public string? Email { get; set; }
-        public string? Password { get; set; }
-        
-        public void SetId(Guid id) => Id = id;
-    }
+        public Request(string username, string email, string password)
+        {
+            Username = username;
+            Email = email;
+            Password = password;
+        }
 
+        public string Username { get; private set; }
+        public string Email { get; private set; }
+        public string Password { get; private set; }
+    }
+    
     internal class Validator : AbstractValidator<Request>
     {
         public Validator()
         {
-            RuleFor(x => x.Id)
-                .NotEmpty().WithMessage("Id cannot be empty");
-
+            RuleFor(request => request.Username)
+                .NotEmpty().WithMessage("Username is required");
+        
             RuleFor(request => request.Email)
-                .EmailAddress().When(x => !string.IsNullOrEmpty(x.Email)).WithMessage("Email is invalid");
-
+                .NotEmpty().WithMessage("Email is required")
+                .EmailAddress().WithMessage("Email is invalid");
+        
             RuleFor(request => request.Password)
+                .NotEmpty().WithMessage("Password is required")
                 .MinimumLength(8).WithMessage("Password must be at least 8 characters")
                 .Matches("[A-Z]").WithMessage("Password must contain at least one upper case letter")
                 .Matches("[a-z]").WithMessage("Password must contain at least one lower case letter")
                 .Matches("\\d").WithMessage("Password must contain at least one number digit")
-                .Matches("[^\\w\\d ]").WithMessage("Password must contain at least one special character")
-                .When(x => !string.IsNullOrEmpty(x.Password));
+                .Matches("[^\\w\\d ]").WithMessage("Password must contain at least one special character");
         }
     }
-
+    
     public class Response
     {
         public Guid Id { get; private set; }
         public string Username { get; private set; }
         public string Email { get; private set; }
     }
-
+    
     internal class Service : IRequestHandler<Request, BaseResponse<Response>>
     {
         private readonly IUnitOfWork _uow;
         private readonly IValidator<Request> _validator;
-        private readonly TypeAdapterConfig _config;
 
-        public Service(IUnitOfWork uow, IValidator<Request> validator, TypeAdapterConfig config)
+        public Service(IUnitOfWork uow, IValidator<Request> validator)
         {
             _uow = uow;
             _validator = validator;
-            _config = config;
         }
 
         public async Task<BaseResponse<Response>> Handle(Request request, CancellationToken ct)
         {
             var validationResult = await _validator.ValidateAsync(request);
-
+            
             if (!validationResult.IsValid)
-                return new ErrorListResponse<Response>("One or more inputs are incorrect", validationResult.Errors);
-
-            var oldUser = await _uow.UserRepository.GetByIdAsync(request.Id, ct);
+                return new ErrorListResponse<Response>(422, "One or more inputs are incorrect", validationResult.Errors);
             
-            if (oldUser == null)
-                return new NoDataResponse<Response>(404, "User does not exist");
+            var user = request.Adapt<Core.User>();
 
-            if (request.Password != null)
-                request.Password = request.Password.HashPassword();
+            user.SetPassword(user.Password.HashPassword());
 
-            request.Adapt(oldUser, _config);
-            
-            _uow.UserRepository.Update(oldUser, ct);
+            await _uow.UserRepository.AddAsync(user, ct);
             await _uow.CommitAsync(ct);
-            
-            var res = oldUser.Adapt<Response>();
-            
-            return new DataResponse<Response>("User updated", res);
+
+            var data = user.Adapt<Response>();
+
+            return new DataResponse<Response>(201, "User created", data);
         }
     }
 }

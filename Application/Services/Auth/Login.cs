@@ -6,7 +6,7 @@ using Infrastructure.UnitOfWork;
 using MediatR;
 using Microsoft.Extensions.Options;
 
-namespace Application.Auth;
+namespace Application.Services.Auth;
 
 public class Login
 {

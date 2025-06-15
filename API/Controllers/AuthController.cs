@@ -1,4 +1,4 @@
-using Application.Auth;
+using Application.Services.Auth;
 using Application.SeedWork.Responses;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;

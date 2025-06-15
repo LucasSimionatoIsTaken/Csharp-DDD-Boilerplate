@@ -1,5 +1,5 @@
 using Application.SeedWork.Responses;
-using Application.User;
+using Application.Services.User;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
