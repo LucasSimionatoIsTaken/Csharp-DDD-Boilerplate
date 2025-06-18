@@ -22,11 +22,11 @@ public class UsersController : Controller
     /// </summary>
     /// <returns>A users list</returns>
     /// <response code="200">A user list</response>
-    [Authorize]
+    //[Authorize]
     [HttpGet]
     [ProducesResponseType(typeof(PaginatedResponse<ListAll.Response>), StatusCodes.Status200OK)]
-    public async Task<BaseResponse<ListAll.Response>> List()
-        => await _mediator.Send(new ListAll.Request());
+    public async Task<BaseResponse<ListAll.Response>> List([FromQuery] ListAll.RequestQuery query)
+        => await _mediator.Send(query);
 
     /// <summary>
     /// Creates a user

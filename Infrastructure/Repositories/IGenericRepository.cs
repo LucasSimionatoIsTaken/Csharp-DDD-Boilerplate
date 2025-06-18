@@ -13,7 +13,7 @@ public interface IGenericRepository<T>
         int pageSize = 10,
         bool noTrack = true,
         CancellationToken ct = default,
-        params Expression<Func<T, object>>[] includes
+        List<Expression<Func<T, object>>>? includes = null
     );
     
     void Update(T entity, CancellationToken cancellationToken);

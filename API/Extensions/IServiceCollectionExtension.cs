@@ -8,7 +8,7 @@ using FluentValidation;
 using Infrastructure.Contexts;
 using Infrastructure.Options;
 using Infrastructure.Repositories;
-using Infrastructure.UnitOfWork;
+using Infrastructure.SeedWork.UnitOfWork;
 using Mapster;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -25,15 +25,16 @@ public static class IServiceCollectionExtension
         services.AddDbContext<Context>(options =>
         {
             options.UseSqlServer(Environment.GetEnvironmentVariable("CONTAINER_ENVIRONMENT") == "true"
-                ? configuration.GetConnectionString("Container")
-                : configuration.GetConnectionString("Default"));
+                    ? configuration.GetConnectionString("Container")
+                    : configuration.GetConnectionString("Default"),
+                sqlOptions => sqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
         });
     }
-    
+
     private static void AddRepositories(this IServiceCollection services)
     {
         var assembly = typeof(GenericRepository<>).Assembly;
-        
+
         var types = assembly.GetTypes()
             .Where(t => t.IsClass &&
                         !t.IsAbstract &&
@@ -64,13 +65,15 @@ public static class IServiceCollectionExtension
             {
                 Version = "v1"
             });
-            
+
             var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
             var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
             options.IncludeXmlComments(xmlPath);
-            
+
             options.CustomSchemaIds(type => (type.FullName ?? type.Name).Replace("+", "."));
             
+            options.EnableAnnotations();
+
             var jwtSecurityScheme = new OpenApiSecurityScheme()
             {
                 Scheme = "Bearer",
@@ -110,15 +113,12 @@ public static class IServiceCollectionExtension
 
     private static void AddControllersAndFilers(this IServiceCollection services)
     {
-        services.AddControllers(options =>
-        {
-            options.Filters.Add<BaseResponseResultFilter>();
-        })
-        .AddNewtonsoftJson(options =>
-        {
-            options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
-            options.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
-        });
+        services.AddControllers(options => { options.Filters.Add<BaseResponseResultFilter>(); })
+            .AddNewtonsoftJson(options =>
+            {
+                options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+                options.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
+            });
     }
 
     private static void ConfigureFluentValidation(this IServiceCollection services)
@@ -130,16 +130,16 @@ public static class IServiceCollectionExtension
     private static void AddMapsterMappings(this IServiceCollection services)
     {
         var config = new TypeAdapterConfig();
-        
+
         config.NewConfig<Update.Request, User>().IgnoreNullValues(true);
-        
+
         services.AddSingleton(config);
     }
 
     private static void AddBearerTokenSettings(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddOptions<AuthTokenOptions>().Bind(configuration.GetSection(nameof(AuthTokenOptions)));
-        
+
         services.AddAuthentication(op =>
             {
                 op.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -155,7 +155,6 @@ public static class IServiceCollectionExtension
 
                 op.TokenValidationParameters = new TokenValidationParameters()
                 {
-
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(authConfig.Key)),
 
@@ -196,13 +195,13 @@ public static class IServiceCollectionExtension
         services.AddSwagger();
 
         services.ConfigureFluentValidation();
-        
+
         services.AddDbContext(configuration);
         services.AddRepositories();
         services.AddUnitOfWork();
-        
+
         services.AddBearerTokenSettings(configuration);
-        
+
         services.AddMapsterMappings();
 
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<BaseResponse<object>>());

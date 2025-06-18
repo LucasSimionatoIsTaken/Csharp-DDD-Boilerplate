@@ -2,7 +2,7 @@ using Application.SeedWork.Responses;
 using FluentValidation;
 using Infrastructure.Extensions;
 using Infrastructure.Options;
-using Infrastructure.UnitOfWork;
+using Infrastructure.SeedWork.UnitOfWork;
 using MediatR;
 using Microsoft.Extensions.Options;
 

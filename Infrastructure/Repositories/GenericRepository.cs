@@ -28,7 +28,7 @@ public abstract class GenericRepository<T> : IGenericRepository<T> where T : Gen
             int pageSize = 10,
             bool noTrack = true,
             CancellationToken ct = default,
-            params Expression<Func<T, object>>[] includes
+            List<Expression<Func<T, object>>>? includes = null
         )
     {
         var query = (IQueryable<T>)_entity;

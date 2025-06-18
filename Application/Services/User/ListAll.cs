@@ -1,15 +1,20 @@
 using Application.SeedWork.Responses;
-using Infrastructure.UnitOfWork;
+using Infrastructure.SeedWork.UnitOfWork;
 using Mapster;
 using MediatR;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace Application.Services.User;
 
 public class ListAll
 {
-    public class Request : IRequest<BaseResponse<Response>>
+    public class RequestQuery : IRequest<BaseResponse<Response>>
     {
+        [SwaggerSchema("Actual page, starts in 1")]
+        public int Page { get; set; } = 1;
         
+        [SwaggerSchema("Number of items per page")]
+        public int PageSize { get; set; } = 20;
     }
     
     public class Response
@@ -19,7 +24,7 @@ public class ListAll
         public string Email { get; private set; }
     }
 
-    internal class Service : IRequestHandler<Request, BaseResponse<Response>>
+    internal class Service : IRequestHandler<RequestQuery, BaseResponse<Response>>
     {
         private readonly IUnitOfWork _uow;
 
@@ -28,13 +33,17 @@ public class ListAll
             _uow = uow;
         }
 
-        public async Task<BaseResponse<Response>> Handle(Request request, CancellationToken ct)
+        public async Task<BaseResponse<Response>> Handle(RequestQuery query, CancellationToken ct)
         {
-            var users = (await _uow.UserRepository.ListAllAsync(ct: ct)).data;
+            var (users, total) = await _uow.UserRepository.ListAllAsync(
+                page: query.Page,
+                pageSize: query.PageSize,
+                ct: ct
+                );
 
             var data = users.Adapt<List<Response>>();
             
-            return new PaginatedResponse<Response>(data);
+            return new PaginatedResponse<Response>(data, query.Page, query.PageSize, total);
         }
     }
 }

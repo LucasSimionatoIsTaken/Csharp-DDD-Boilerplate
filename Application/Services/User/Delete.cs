@@ -1,5 +1,5 @@
 using Application.SeedWork.Responses;
-using Infrastructure.UnitOfWork;
+using Infrastructure.SeedWork.UnitOfWork;
 using MediatR;
 
 namespace Application.Services.User;

@@ -8,6 +8,15 @@ public class PaginatedResponse<T> : BaseResponse<T> where T : class
         StatusCode = statusCode;
         Data = data;
     }
+    
+    public PaginatedResponse(List<T> data, int page, int pageSize, int total)
+    {
+        StatusCode = 200;
+        Data = data;
+        Page = page;
+        PageSize = pageSize;
+        Total = total;
+    }
 
     public PaginatedResponse(List<T> data)
     {

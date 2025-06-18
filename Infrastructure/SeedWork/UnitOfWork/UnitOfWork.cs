@@ -1,7 +1,7 @@
 using Infrastructure.Contexts;
 using Infrastructure.Repositories.UserRepository;
 
-namespace Infrastructure.UnitOfWork;
+namespace Infrastructure.SeedWork.UnitOfWork;
 
 public class UnitOfWork : IUnitOfWork, IDisposable
 {

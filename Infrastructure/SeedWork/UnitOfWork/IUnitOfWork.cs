@@ -1,6 +1,6 @@
 using Infrastructure.Repositories.UserRepository;
 
-namespace Infrastructure.UnitOfWork;
+namespace Infrastructure.SeedWork.UnitOfWork;
 
 public interface IUnitOfWork
 {

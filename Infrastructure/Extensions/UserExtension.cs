@@ -11,7 +11,6 @@ public static class UserExtension
 {
     public static string GenerateJwtToken(this User user, AuthTokenOptions options)
     {
-        //TODO: get key from a decent place
         var creds = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(options.Key).ToArray()),
             SecurityAlgorithms.HmacSha256);
 

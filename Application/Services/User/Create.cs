@@ -1,7 +1,7 @@
 using Application.SeedWork.Responses;
 using FluentValidation;
 using Infrastructure.Extensions;
-using Infrastructure.UnitOfWork;
+using Infrastructure.SeedWork.UnitOfWork;
 using Mapster;
 using MediatR;
 
