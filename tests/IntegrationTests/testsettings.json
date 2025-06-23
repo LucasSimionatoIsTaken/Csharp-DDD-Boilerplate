@@ -1,0 +1,13 @@
+{
+  "ConnectionStrings": {
+    "Default": "Data Source=.\\SQLEXPRESS;Initial Catalog=database;TrustServerCertificate=true;Integrated Security=true;",
+    "Container": "Data Source=sql-server;Initial Catalog=database;TrustServerCertificate=true;User Id=sa;Password=SenhaBanco!1;"
+  },
+  "AllowedHosts": "*",
+  "AuthTokenOptions": {
+    "Key": "sjfhafhkjdahlfjkashkfljhsaljfsdhkashlkjfhsdaklfhsdl",
+    "Issuer": "base",
+    "Audience": "base",
+    "TokenDuration": 72000
+  }
+}

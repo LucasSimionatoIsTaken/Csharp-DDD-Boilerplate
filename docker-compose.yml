@@ -1,15 +1,15 @@
-name: "BackBase"
+name: "C# DDD Boilerplate"
 services:
   api:
     build:
       context: .
-      dockerfile: API/Dockerfile
+      dockerfile: src/API/Dockerfile
     ports:
       - "5000:5000"
       - "5001:5001"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:5000
+      - ASPNETCORE_URLS=http://+:5000;https://+:5001
     depends_on:
       - sql-server
 
