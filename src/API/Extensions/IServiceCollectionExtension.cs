@@ -20,15 +20,16 @@ namespace API.Extensions;
 
 public static class IServiceCollectionExtension
 {
-    private static void AddDbContext(this IServiceCollection services, IConfiguration configuration)
+    private static void AddDbContext(this IServiceCollection services, IConfiguration configuration, IHostEnvironment env)
     {
-        services.AddDbContext<AppDbContext>(options =>
-        {
-            options.UseSqlServer(Environment.GetEnvironmentVariable("CONTAINER_ENVIRONMENT") == "true"
-                    ? configuration.GetConnectionString("Container")
-                    : configuration.GetConnectionString("Default"),
-                sqlOptions => sqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
-        });
+        if (!env.IsEnvironment("Test"))
+            services.AddDbContext<AppDbContext>(options =>
+            {
+                options.UseSqlServer(Environment.GetEnvironmentVariable("CONTAINER_ENVIRONMENT") == "true"
+                        ? configuration.GetConnectionString("Container")
+                        : configuration.GetConnectionString("Default"),
+                    sqlOptions => sqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
+            });
     }
 
     private static void AddRepositories(this IServiceCollection services)
@@ -91,11 +92,6 @@ public static class IServiceCollectionExtension
             };
 
             options.AddSecurityDefinition(jwtSecurityScheme.Reference.Id, jwtSecurityScheme);
-
-            // options.AddSecurityRequirement(new OpenApiSecurityRequirement
-            // {
-            //     { jwtSecurityScheme, Array.Empty<string>() }
-            // });
 
             options.MapType<TimeSpan>(() => new OpenApiSchema
             {
@@ -190,13 +186,13 @@ public static class IServiceCollectionExtension
     /// </summary>
     /// <param name="services"></param>
     /// <param name="configuration"></param>
-    public static void AddDependencyInjections(this IServiceCollection services, IConfiguration configuration)
+    public static void AddDependencyInjections(this IServiceCollection services, IConfiguration configuration, IHostEnvironment env)
     {
         services.AddSwagger();
 
         services.ConfigureFluentValidation();
 
-        services.AddDbContext(configuration);
+        services.AddDbContext(configuration, env);
         services.AddRepositories();
         services.AddUnitOfWork();
 

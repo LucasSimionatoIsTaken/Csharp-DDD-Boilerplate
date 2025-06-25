@@ -6,12 +6,12 @@ namespace Infrastructure.Repositories.UserRepository;
 
 public class UserRepository : GenericRepository<User>, IUserRepository
 {
-    public UserRepository(AppDbContext appDbContext) : base(appDbContext)
+    public UserRepository(AppDbContext context) : base(context)
     {
     }
 
     public async Task<User?> GetByEmailAsync(string email)
     {
-        return await AppDbContext.Users.FirstOrDefaultAsync(u => u.Email == email);
+        return await Context.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == email.ToLower());
     }
 }

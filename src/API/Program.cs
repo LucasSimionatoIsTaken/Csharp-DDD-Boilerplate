@@ -6,7 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddJsonFile("appsettings.json", true, true);
 
-builder.Services.AddDependencyInjections(builder.Configuration);
+builder.Services.AddDependencyInjections(builder.Configuration, builder.Environment);
 
 var app = builder.Build();
 
@@ -15,7 +15,12 @@ app.UseCors();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
+    var providerName = db.Database.ProviderName;
+
+    if (providerName != "Microsoft.EntityFrameworkCore.InMemory")
+    {
+        db.Database.Migrate();
+    }
 }
 
 // Configure the HTTP request pipeline.
@@ -44,4 +49,7 @@ app.UseCors("AnyOrigin");
 
 app.Run();
 
+/// <summary>
+/// Program partial class, needed to create tests
+/// </summary>
 public partial class Program { }

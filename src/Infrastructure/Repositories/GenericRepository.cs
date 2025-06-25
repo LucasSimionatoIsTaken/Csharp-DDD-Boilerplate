@@ -7,13 +7,13 @@ namespace Infrastructure.Repositories;
 
 public abstract class GenericRepository<T> : IGenericRepository<T> where T : GenericModel
 {
-    protected GenericRepository(AppDbContext appDbContext)
+    protected GenericRepository(AppDbContext context)
     {
-        AppDbContext = appDbContext;
-        _entity = AppDbContext.Set<T>();
+        Context = context;
+        _entity = Context.Set<T>();
     }
 
-    protected readonly AppDbContext AppDbContext;
+    protected readonly AppDbContext Context;
     private readonly DbSet<T> _entity;
     
     public async Task AddAsync(T entity, CancellationToken cancellationToken)
@@ -57,7 +57,7 @@ public abstract class GenericRepository<T> : IGenericRepository<T> where T : Gen
 
     public void Update(T entity, CancellationToken ct)
     {
-        AppDbContext.Entry(entity).State = EntityState.Modified;
+        Context.Entry(entity).State = EntityState.Modified;
     }
 
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)

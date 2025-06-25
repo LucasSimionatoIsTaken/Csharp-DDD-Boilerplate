@@ -35,18 +35,22 @@ public class TestBase : IAsyncLifetime
         await SeedDataAsync();
     }
 
-    private Task ClearDatabaseAsync()
+    private async Task ClearDatabaseAsync()
     {
         var context = _services.GetRequiredService<AppDbContext>();
+        
+        await context.Database.EnsureCreatedAsync();
+        
+        context.Users.RemoveRange(context.Users);
 
-        return context.Database.ExecuteSqlRawAsync(@"
-            DELETE FROM dbo.Users;
-            ");
+        await context.SaveChangesAsync();
     }
 
     private async Task SeedDataAsync()
     {
         var context = _services.GetRequiredService<AppDbContext>();
+
+        await context.Database.EnsureCreatedAsync();
 
         context.Users.AddRange(
             new User(

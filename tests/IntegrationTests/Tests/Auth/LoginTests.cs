@@ -4,6 +4,8 @@ using Application.SeedWork.Responses;
 using FluentAssertions;
 using IntegrationTests.config;
 using Application.Services.Auth;
+using Infrastructure.Contexts;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace IntegrationTests.Tests.Auth;
 
@@ -24,6 +26,7 @@ public class LoginTests : TestBase
         });
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+        
         var body = await response.Content.ReadFromJsonAsync<DataResponse<Login.Response>>();
         body.Should().NotBeNull();
         body.Data!.Token.Should().NotBeNullOrEmpty();

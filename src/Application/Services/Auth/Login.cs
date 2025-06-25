@@ -68,16 +68,13 @@ public class Login
             var validationResult = await _validator.ValidateAsync(request);
             
             if (!validationResult.IsValid)
-                return new NoDataResponse<Response>(401, "E-mail ou senha incorretos");
+                return new NoDataResponse<Response>(401, "Email or password is incorrect");
             
             var user = await _uow.UserRepository.GetByEmailAsync(request.Email);
             
-            if (user == null)
-                return new NoDataResponse<Response>(401, "E-mail ou senha incorretos");
+            if (user == null || !user.Password.VerifyHash(request.Password))
+                return new NoDataResponse<Response>(401, "Email or password is incorrect");
 
-            if (!user.Password.VerifyHash(request.Password))
-                return new NoDataResponse<Response>(401, "E-mail ou senha incorretos");
-            
             var token = new Response(user.GenerateJwtToken(_authOptions));
 
             return new DataResponse<Response>(200, "Login successfully", token);

@@ -13,7 +13,7 @@ public class BaseResponseResultFilter : IActionFilter
     /// <summary>
     /// Sets Status code after controller action
     /// </summary>
-    /// <param name="context">AppDbContext of the executed action</param>
+    /// <param name="context">Context of the executed action</param>
     public void OnActionExecuted(ActionExecutedContext context)
     {
         if (context.Result is not ObjectResult objectResult || objectResult.Value == null) return;
