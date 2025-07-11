@@ -123,13 +123,9 @@ public static class IServiceCollectionExtension
             .ForEach(e => services.AddTransient(e.InterfaceType, e.ValidatorType));
     }
 
-    private static void AddMapsterMappings(this IServiceCollection services)
+    private static void AddMappings(this IServiceCollection services)
     {
-        var config = new TypeAdapterConfig();
-
-        config.NewConfig<Update.Request, User>().IgnoreNullValues(true);
-
-        services.AddSingleton(config);
+        TypeAdapterConfig.GlobalSettings.Scan(typeof(BaseResponse<>).Assembly);
     }
 
     private static void AddBearerTokenSettings(this IServiceCollection services, IConfiguration configuration)
@@ -198,7 +194,7 @@ public static class IServiceCollectionExtension
 
         services.AddBearerTokenSettings(configuration);
 
-        services.AddMapsterMappings();
+        services.AddMappings();
 
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<BaseResponse<object>>());
 

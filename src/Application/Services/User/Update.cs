@@ -39,6 +39,15 @@ public class Update
         }
     }
 
+    internal class Mapping : IRegister
+    {
+        public void Register(TypeAdapterConfig config)
+        {
+            config.NewConfig<Request, Core.User>()
+                .IgnoreNullValues(true);
+        }
+    }
+
     public class Response
     {
         public Guid Id { get; private set; }
