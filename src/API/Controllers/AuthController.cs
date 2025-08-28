@@ -7,7 +7,7 @@ namespace API.SeedWork.Filters.Swagger;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AuthController : Controller
+public class AuthController : ControllerBase
 {
     private readonly IMediator _mediator;
 
