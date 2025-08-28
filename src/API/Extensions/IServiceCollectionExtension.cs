@@ -125,7 +125,10 @@ public static class IServiceCollectionExtension
 
     private static void AddMappings(this IServiceCollection services)
     {
-        TypeAdapterConfig.GlobalSettings.Scan(typeof(BaseResponse<>).Assembly);
+        var config = TypeAdapterConfig.GlobalSettings;
+        config.Scan(typeof(BaseResponse<>).Assembly);
+
+        services.AddSingleton(config);
     }
 
     private static void AddBearerTokenSettings(this IServiceCollection services, IConfiguration configuration)
