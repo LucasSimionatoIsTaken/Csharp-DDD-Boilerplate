@@ -33,11 +33,17 @@ if (app.Environment.IsDevelopment())
         options.RoutePrefix = string.Empty;
         
         options.InjectStylesheet("/swagger-ui/SwaggerDark.min.css");
+        options.InjectJavascript("/swagger-ui/SwaggerScript.min.js");
     });
     app.MapGet("/swagger-ui/SwaggerDark.min.css", async (CancellationToken ct) =>
     {
-        var css = await File.ReadAllBytesAsync("wwwroot/swagger-ui/SwaggerDark.min.css", ct);
+        var css = await File.ReadAllBytesAsync("wwwroot/swagger-ui/SwaggerDark.css", ct);
         return Results.File(css, "text/css");
+    }).ExcludeFromDescription();
+    app.MapGet("/swagger-ui/SwaggerScript.min.js", async (CancellationToken ct) =>
+    {
+        var js = await File.ReadAllBytesAsync("wwwroot/swagger-ui/SwaggerScript.min.js", ct);
+        return Results.File(js, "application/javascript");
     }).ExcludeFromDescription();
 }
 
