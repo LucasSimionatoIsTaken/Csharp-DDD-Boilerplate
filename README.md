@@ -82,12 +82,6 @@ Siga os passos abaixo para configurar e executar o projeto em seu ambiente.
 
 ### 1. Clone o Repositório
 
--   [.NET 9 SDK](https://dotnet.microsoft.com/en-us/download)
--   [Docker](https://www.docker.com/) (Para execução com contêineres)
--   Um SGBD como [SQL Server](https://www.microsoft.com/sql-server/sql-server-2022) (Para execução local)
-
-### 1. Clone o Repositório
-
 ```bash
 git clone https://github.com/LucasSimionatoIsTaken/csharp-ddd-boilerplate.git
 cd csharp-ddd-boilerplate
