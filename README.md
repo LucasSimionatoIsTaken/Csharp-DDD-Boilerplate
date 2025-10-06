@@ -141,58 +141,6 @@ Caso deseje migrar para outro SGBD (ex: MySQL, PostgreSQL):
     dotnet remove package Microsoft.EntityFrameworkCore.SqlServer --project Infrastructure
     ```
 2.  Em `src/API/Extensions/IServiceCollectionExtensions.cs`, na função `AddDbContext`, substitua `UseSqlServer` pelo método de extensão correspondente ao seu novo provider (ex: `UseMySql`).
-git clone https://github.com/LucasSimionatoIsTaken/csharp-ddd-boilerplate.git
-cd csharp-ddd-boilerplate
-```
-
-### 2. Configuração (Apenas para execução local)
-
-Se você não for usar o Docker, precisará configurar a string de conexão no arquivo `src/API/appsettings.json`. Altere a string `Default` para apontar para o seu banco de dados.
-
-```json
-"ConnectionStrings": {
-  "Default": "Data Source=SEU_SERVIDOR;Initial Catalog=NOME_DO_BANCO;TrustServerCertificate=true;Integrated Security=true;"
-},
-```
-
-### 3. Execute o Projeto
-
--   **Com Docker (Recomendado):**
-    O Docker Compose irá criar e configurar os contêineres para a API e para o banco de dados.
-
-    ```bash
-    docker-compose up -d
-    ```
-
--   **Localmente:**
-    Execute o comando na raiz do projeto. As migrations serão aplicadas na inicialização.
-
-    ```bash
-    dotnet run --project src/API/API.csproj
-    ```
-
-## 📚 Como Usar
-
-Após iniciar a aplicação, a API estará disponível localmente.
-
-1.  **Acesse a Documentação da API (Swagger)**:
-    Abra seu navegador e acesse `http://localhost:5000/swagger`. Lá você encontrará todos os endpoints documentados e poderá testá-los diretamente.
-
-2.  **Exemplo de fluxo**:
-    * Use o endpoint `POST /api/auth/register` para criar um novo usuário.
-    * Use `POST /api/auth/login` para autenticar e obter um token JWT.
-    * Use o token obtido no cabeçalho `Authorization: Bearer <token>` para acessar endpoints protegidos.
-
-## 🔧 Customização do Banco de Dados
-
-Caso deseje migrar para outro SGBD (ex: MySQL, PostgreSQL):
-
-1.  Instale o provider do Entity Framework para o banco desejado e remova o do SQL Server. Exemplo para MySQL:
-    ```bash
-    dotnet add package Pomelo.EntityFrameworkCore.MySql --project Infrastructure
-    dotnet remove package Microsoft.EntityFrameworkCore.SqlServer --project Infrastructure
-    ```
-2.  Em `src/API/Extensions/IServiceCollectionExtensions.cs`, na função `AddDbContext`, substitua `UseSqlServer` pelo método de extensão correspondente ao seu novo provider (ex: `UseMySql`).
 
 ## 📚 Próximos Passos
 -   [x] 🧾 Melhorar a cobertura da documentação da API (Swagger)
